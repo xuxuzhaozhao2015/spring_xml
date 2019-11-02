@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- 把对象的创建交个spring来管理 -->
+    <bean id="accountDao" class="top.xuxuzhaozhao.dao.impl.AccountDao"/>
+
+    <!-- 1、默认构造函数创建 -->
+    <bean id="accountService" class="top.xuxuzhaozhao.service.impl.AccountServiceImpl"/>
+
+    <!-- 2、使用普通工厂中的方法创建对象，（类中使用方法返回需要的对象） -->
+    <bean id="beanFactory" class="top.xuxuzhaozhao.factory.BeanFactory"/>
+    <bean id="accountService1" factory-bean="beanFactory" factory-method="getAccountService"/>
+
+    <!-- 3、使用静态工厂创建对象 -->
+    <bean id="accountService2" class="top.xuxuzhaozhao.factory.BeanFactoryStatic" factory-method="getAccountService"/>
+
+    <!-- bean的作用范围
+         bean scope:
+            singleton：默认的就是这样
+            prototype：多例创建
+            request：作用于web应用的请求范围
+            session：作用于web应用的会话范围
+            global-session：作用于集群范围环境的会话范围（全局会话范围），当不是集群环境时，它就是session
+            -->
+    <!-- bean的生命周期
+         单例对象：当容器创建时对象出生-》容器存在即存活-》容器销毁单例也就销毁了
+         多例对象：当使用时创建-》使用时存活-》当对象长时间不用且没有对象引用的时候，由java垃圾回收机制来销毁
+            -->
+    <bean id="accountService4" scope="singleton" init-method="init"
+          destroy-method="destroy" class="top.xuxuzhaozhao.service.impl.AccountServiceImpl"/>
+
+    <!-- spring中依赖注入
+    能注入的数据：
+        基本类型和String
+        其他bean类型（在配置文件中或者注解配置过的bean）
+        复杂类型/集合类型
+    能注入的数据：
+         构造函数注入
+         set方法注入
+         注解提供
+            -->
+    <!-- 构造函数注入（实际开发中除非必要，一般不用这种方式）
+            value：基本类型，String
+            ref：bean.xml中配置过的bean
+     -->
+    <bean id="acccountService_constructor" class="top.xuxuzhaozhao.service.impl.AccountServiceImpl">
+        <constructor-arg name="name" value="构造函数"/>
+        <constructor-arg name="age" value="24"/>
+        <constructor-arg name="birthday" ref="now"/>
+    </bean>
+    <bean id="now" class="java.util.Date"/>
+
+    <!-- set方法注入（实际开发中一般使用这种方式）
+            property:
+                name:指定注入时调用的set方法名称
+                value：基本类型，String
+                ref：bean.xml中配置过的bean
+            优势：可以直接使用默认构造函数
+            劣势：如果某个成员必须有值，没法保证传入值
+     -->
+    <bean id="accountService_set" class="top.xuxuzhaozhao.service.impl.AccountServiceImpl2">
+        <property name="name" value="set注入"/>
+        <property name="age" value="25"/>
+        <property name="birthday" ref="now"/>
+        <property name="accountDao" ref="accountDao"/>
+    </bean>
+
+    <!-- set,复杂类型注入
+        list 结构标签可以使用：list,array,set相互之间可以互换
+        map 结构标签：entry,props相互之间可以互换
+     -->
+    <bean id="accountService_set_complicate" class="top.xuxuzhaozhao.service.impl.AccountServiceImpl2">
+        <property name="myStrs">
+            <array>
+                <value>AAA</value>
+                <value>BBB</value>
+                <value>CCC</value>
+            </array>
+        </property>
+        <property name="myList">
+            <list>
+                <value>DDD</value>
+                <value>EEE</value>
+                <value>FFF</value>
+            </list>
+        </property>
+        <property name="mySets">
+            <set>
+                <value>AAA</value>
+                <value>BBB</value>
+                <value>CCC</value>
+            </set>
+        </property>
+
+        <property name="myMaps">
+            <map>
+                <entry key="testA" value="AAA"/>
+            </map>
+        </property>
+
+        <property name="myProps">
+            <props>
+                <prop key="testB">BBB</prop>
+            </props>
+        </property>
+    </bean>
+</beans>
